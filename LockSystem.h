@@ -22,9 +22,10 @@ private:
     int fadeStep;
     int direction; // 1 = stigende, -1 = faldende
 public:
-    LockSystem(int c1, int c2, int l1, int l2, int redPin, int greenPin, int connPin, int btn1, int btn2, int btn3, int clk, int dio);
+    LockSystem(int c1, int c2, int l1, int l2, int redPin, int greenPin, int connPin, int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio);
     void setLocked(bool state);
     void update();
+    bool isSystemUnlocked();
 };
 
 #endif

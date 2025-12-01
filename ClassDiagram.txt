@@ -1,0 +1,104 @@
+/**
+ * MESSAGE FORTRESS - CLASS DIAGRAM
+ * Escaperoom Krypterings Device
+ * 
+ * ASCII Class Diagram showing the modular architecture
+ */
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           MESSAGE FORTRESS SYSTEM                           │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────┐    ┌─────────────────┐    ┌───────────────────┐
+│   LockSystem        │    │   Box_Status    │    │      LED          │
+├─────────────────────┤    ├─────────────────┤    ├───────────────────┤
+│ - codeLED1          │    │ - _redPin       │    │ - pin             │
+│ - codeLED2          │    │ - _greenPin     │    ├───────────────────┤
+│ - lockLED1          │    │ - _connPin      │    │ + LED()           │
+│ - lockLED2          │    │ - _currentState │    │ + setBrightness() │
+│ - status            │    ├─────────────────┤    └───────────────────┘
+│ - display           │    │ + begin()       │
+│ - locked            │    │ + setState()    │
+│ - brightness1       │    │ + update()      │
+│ - brightness2       │    │ + setLocked()   │
+├─────────────────────┤    │ + getStatus()   │
+│ + setLocked()       │    └─────────────────┘
+│ + update()          │
+│ + isSystemUnlocked()│
+└─────────────────────┘
+
+           │
+           │ uses
+           ▼
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            CodeDisplay (Main)                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ - _display: TM1637Display                                                   │
+│ - _buttonInput: ButtonInput                                                 │
+│ - _accessControl: AccessControl                                             │
+│ - _codeMapper: CodeMapper                                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ + CodeDisplay(btn1-8, clk, dio)                                             │
+│ + begin()                                                                   │
+│ + update()                                                                  │
+│ + isUnlocked()                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+           │                    │                    │
+           │ uses               │ uses               │ uses
+           ▼                    ▼                    ▼
+
+┌─────────────────┐    ┌─────────────────────┐    ┌─────────────────┐
+│  ButtonInput    │    │ AccessControl       │    │   CodeMapper    │
+├─────────────────┤    ├─────────────────────┤    ├─────────────────┤
+│ - _btn1-8       │    │ - _unlocked         │    │                 │
+│ - _lastReading  │    │ - _currentInput     │    │                 │
+│ - _lastDebounce │    │ - _lastInputTime    │    │                 │
+│ - _debounceDelay│    │ - _inputTimeout     │    │                 │
+├─────────────────┤    ├─────────────────────┤    ├─────────────────┤
+│ + begin()       │    │ + begin()           │    │ + getCode()     │
+│ + readInputs()  │    │ + handleInput()     │    │ + isValidInput()│
+│ + hasChanged()  │    │ + isUnlocked()      │    │                 │
+└─────────────────┘    │ + lock()            │    └─────────────────┘
+                       │ + getCurrentInput() │
+                       │ + hasTimedOut()     │
+                       └─────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              DEPENDENCIES                                   │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ config.h          - Pin definitions, timing constants, CODES array          │
+│ TM1637Display.h   - External library for 7-segment display                  │
+│ Arduino.h         - Arduino core functions                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              DATA FLOW                                      │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ 1. ButtonInput reads 8 buttons → 8-bit value (0-255)                        │
+│ 2. AccessControl checks if input matches ACCESS_CODE (253672)               │
+│ 3. If unlocked: CodeMapper converts input to display code via CODES[]       │
+│ 4. CodeDisplay shows either access prompt or mapped code                    │
+│ 5. LockSystem controls LED states based on unlock status                    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            SYSTEM STATES                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ LOCKED (Access Code Required):                                              │
+│   - Display: Shows 0000 or current input                                    │
+│   - LEDs: Constant red (255 brightness)                                     │
+│   - Waiting for ACCESS_CODE (253672)                                        │
+│                                                                             │
+│ UNLOCKED - LOCKED STATE:                                                    │
+│   - Display: Shows mapped codes from CODES array                            │
+│   - LEDs: Pulsing red (brightness1/brightness2)                             │
+│                                                                             │
+│ UNLOCKED - CODE STATE:                                                      │
+│   - Display: Shows mapped codes from CODES array                            │
+│   - LEDs: Pulsing blue (brightness1/brightness2)                            │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘

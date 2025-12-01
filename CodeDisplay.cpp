@@ -1,39 +1,61 @@
+/**
+ * CodeDisplay.cpp (refaktoreret)
+ * Håndterer kun 7-segment display funktionalitet
+ * Bruger modulære klasser for button input, adgangskode og kode mapping
+ */
+
 #include "CodeDisplay.h"
+#include "config.h"
 
-NEW SKETCH
+/**
+ * Konstruktør for CodeDisplay
+ * @param btn1-btn8 Button pins (8 knapper)
+ * @param clk, dio TM1637 display pins
+ */
+CodeDisplay::CodeDisplay(int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio)
+  : _display(clk, dio),
+    _buttonInput(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8),
+    _accessControl(),
+    _codeMapper() {}
 
-CodeDisplay::CodeDisplay(int btn1, int btn2, int btn3, int clk, int dio)
-  : _btn1(btn1), _btn2(btn2), _btn3(btn3), _clk(clk), _dio(dio), _display(clk, dio) {}
-
+/**
+ * Initialiser CodeDisplay systemet
+ * Initialiserer alle modulære komponenter
+ */
 void CodeDisplay::begin() {
-  pinMode(_btn1, INPUT_PULLUP);
-  pinMode(_btn2, INPUT_PULLUP);
-  pinMode(_btn3, INPUT_PULLUP);
-  _display.setBrightness(0x0f);
+  _buttonInput.begin();           // Initialiser button input
+  _accessControl.begin();         // Initialiser adgangskode kontrol
+  _display.setBrightness(DISPLAY_BRIGHTNESS);  // Sæt display lysstyrke
 }
 
-int CodeDisplay::readInputs() {
-  int a = digitalRead(_btn1);
-  int b = digitalRead(_btn2);
-  int c = digitalRead(_btn3);
-  return (c << 2) | (b << 1) | a;
+/**
+ * Returnerer om systemet er låst op
+ */
+bool CodeDisplay::isUnlocked() {
+  return _accessControl.isUnlocked();
 }
 
-int CodeDisplay::getCode() {
-  switch (readInputs()) {
-    case 0: return 1234;
-    case 1: return 1243;
-    case 2: return 1423;
-    case 3: return 1432;
-    case 4: return 4123;
-    case 5: return 4231;
-    case 6: return 4321;
-    case 7: return 4312;
-    default: return 0;
-  }
-}
-
+/**
+ * Opdaterer displayet med den aktuelle kode eller adgangskode prompt
+ * Kaldes kontinuerligt fra hovedloop
+ */
 void CodeDisplay::update() {
-  int code = getCode();
-  _display.showNumberDec(code, false);
+  int input = _buttonInput.readInputs();
+  
+  if (!_accessControl.isUnlocked()) {
+    // Håndter adgangskode input
+    _accessControl.handleInput(input);
+    
+    // Vis nuværende input eller prompt
+    int currentInput = _accessControl.getCurrentInput();
+    if (currentInput > 0) {
+      _display.showNumberDec(currentInput, false);
+    } else {
+      _display.showNumberDec(0, false);  // Vis 0000 som prompt
+    }
+  } else {
+    // Normal kode visning når låst op
+    int code = _codeMapper.getCode(input);
+    _display.showNumberDec(code, false);
+  }
 }

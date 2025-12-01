@@ -1,4 +1,5 @@
 #include "Box_Status.h"
+#include "config.h"
 
 Box_Status::Box_Status(uint8_t redPin, uint8_t greenPin, uint8_t connPin)
 : _redPin(redPin), _greenPin(greenPin), _connPin(connPin),
@@ -66,7 +67,7 @@ void Box_Status::update() {
     switch (_currentState) {
         case NOT_CONNECTED: {
             unsigned long currentTime = millis();
-            if (currentTime - _lastBlinkTime >= 500) { // blink hvert 500 ms
+            if (currentTime - _lastBlinkTime >= BLINK_INTERVAL) {
                 _redLedState = !_redLedState;
                 digitalWrite(_redPin, _redLedState);
                 _lastBlinkTime = currentTime;
