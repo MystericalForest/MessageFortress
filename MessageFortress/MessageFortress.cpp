@@ -77,7 +77,7 @@ void MessageFortress::update() {
                 accessControl.handleInput(key);
                 // Tjek om adgang lige er blevet givet
                 if (accessControl.isAccessGranted()) {
-                    lockSys.getCodeDisplay().turnOn();  // Tænd CodeDisplay når adgang givet
+                    lockSys.getCodeDisplay().enable();  // Aktiver CodeDisplay når adgang givet
                     form.show();  // Skift til hovedsystem
                 }
             } else {

@@ -25,6 +25,7 @@ class CodeDisplay {
     void update();
     void turnOff();
     void turnOn();
+    void enable();
 };
 
 #endif

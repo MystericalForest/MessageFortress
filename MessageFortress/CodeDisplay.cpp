@@ -73,7 +73,9 @@ int CodeDisplay::getCode() {
 
 void CodeDisplay::update() {
   if (!_enabled) {
-    turnOff();
+    // Vis blanke segmenter når slukket
+    uint8_t blank[] = {0x00, 0x00, 0x00, 0x00};
+    _display.setSegments(blank);
     return;
   }
   
@@ -115,7 +117,12 @@ void CodeDisplay::turnOff() {
 }
 
 void CodeDisplay::turnOn() {
-  _enabled = true;
+  // Tænd kun brightness, men hold _enabled = false indtil adgangskode
   _display.setBrightness(0x0f, true);
+  // _enabled forbliver false indtil enable() kaldes
+}
+
+void CodeDisplay::enable() {
+  _enabled = true;
   startStartup();
 }
