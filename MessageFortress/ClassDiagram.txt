@@ -33,7 +33,7 @@
         │ DisplayManager  │  │  KeypadManager  │  │   LockSystem    │
         ├─────────────────┤  ├─────────────────┤  ├─────────────────┤
         │ - lcd           │  │ - keypad        │  │ - codeLED1/2    │
-        │ - _startupActive│  ├─────────────────┤  │ - lockLED1/2    │
+        │ - _state        │  ├─────────────────┤  │ - lockLED1/2    │
         │ - _startupCount │  │ + getKey()      │  │ - status        │
         │ - _lastStartupTime│                │  │ - display       │
         ├───────────────────┤                │  │ - locked        │
@@ -41,7 +41,7 @@
         │ + showLines()     │                │  ├─────────────────┤
         │ + showQuestion()  │                │  │ + setLocked()   │
         │ + clear()         │                │  │ + update()      │
-        │ + turnOn()        │                │  │ + getCodeDisplay()│
+        │ + setState()      │                │  │ + getCodeDisplay()│
         │ + updateStartup() │                │  └─────────────────┘
         └───────────────────┘                │           │
                     │                        │           │ contains
@@ -89,9 +89,32 @@
                                     └──────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
+│                            STATE MACHINE ARCHITECTURE                       │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ DisplayManager States:          CodeDisplay States:                         │
+│ ┌─────┐ KEY_PIN ┌─────────┐     ┌─────┐ setState() ┌─────────┐              │
+│ │ OFF │ ──────► │ STARTUP │     │ OFF │ ─────────► │ STARTUP │              │
+│ └─────┘         └─────────┘     └─────┘            └─────────┘              │
+│    ▲                 │              ▲                   │                   │
+│    │ KEY_PIN         │ 16 dots      │ setState()        │ 27 segments       │
+│    │ released        │ complete     │                   │ complete          │
+│    │                 ▼              │                   ▼                   │
+│    │            ┌────────┐          │              ┌────────┐               │
+│    └────────────│   ON   │          └──────────────│   ON   │               │
+│                 └────────┘                         └────────┘               │
+│                                                                             │
+│ Timing Constants (config.h):                                                │
+│ - LCD_STARTUP_DELAY: 750ms (progressive dots)                               │
+│ - CODE_STARTUP_DELAY: 500ms (segment animation)                             │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
 │                              EXTERNAL DEPENDENCIES                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ config.h          - Pin definitions, timing constants, ACCESS_CODE          │
+│                   - LCD_STARTUP_DELAY (750ms), CODE_STARTUP_DELAY (500ms)   │
 │ TM1637Display.h   - External library for 7-segment display                  │
 │ LiquidCrystal_I2C.h - External library for LCD display                      │
 │ Keypad.h          - External library for keypad input                       │
@@ -102,13 +125,16 @@
 │                              SYSTEM FLOW                                    │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│ 1. KEY_PIN pressed → LCD startup sequence (1-10)                            │
-│ 2. AccessControl shows "Indtast kode:" prompt                               │
-│ 3. User enters ACCESS_CODE (324373) via keypad                              │
-│ 4. If correct → CodeDisplay.enable() → shows 256 codes via 8 buttons        │
-│ 5. FormManager handles normal operation questions                           │
-│ 6. LockSystem controls LED states and CodeDisplay visibility                │
-│ 7. KEY_PIN released → All displays off, system reset                        │
+│ 1. KEY_PIN pressed → Both displays enter STARTUP state                      │
+│    - LCD: Progressive dots animation (16 dots, 750ms intervals)             │
+│    - CodeDisplay: Segment animation (27 steps, 500ms intervals)             │
+│ 2. After startup → LCD enters ON state, CodeDisplay enters OFF state        │
+│ 3. AccessControl shows "Indtast kode:" prompt on LCD                        │
+│ 4. User enters ACCESS_CODE (324373) via keypad                              │
+│ 5. If correct → CodeDisplay.setState(ON) → shows 256 codes via 8 buttons    │
+│ 6. FormManager handles normal operation questions on LCD                    │
+│ 7. LockSystem controls LED states and CodeDisplay state management          │
+│ 8. KEY_PIN released → All displays setState(OFF), system reset              │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
@@ -116,13 +142,18 @@
 │                            SECURITY LAYERS                                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│ Layer 1: KEY_PIN physical switch - Must be pressed to power displays        │
+│ Layer 1: KEY_PIN physical switch - Controls display state machines          │
 │ Layer 2: AccessControl - Requires ACCESS_CODE (324373) from config.h        │
-│ Layer 3: CodeDisplay._enabled - Only shows codes after access granted       │
+│ Layer 3: CodeDisplay state - Only shows codes in ON state after access     │
 │                                                                             │
-│ CodeDisplay States:                                                         │
-│ - turnOn(): Sets brightness but _enabled = false (blank segments)           │
-│ - enable(): Sets _enabled = true and starts showing codes                   │
-│ - turnOff(): Sets _enabled = false and brightness = 0                       │
+│ CodeDisplay State Management:                                               │
+│ - OFF state: Blank segments, brightness = 0                                 │
+│ - STARTUP state: 27-step segment animation with timing                      │
+│ - ON state: Shows 4-digit codes based on 8-button combinations              │
+│                                                                             │
+│ DisplayManager State Management:                                            │
+│ - OFF state: LCD backlight off, clear display                              │
+│ - STARTUP state: Progressive dot animation (16 dots)                        │
+│ - ON state: Normal LCD operation for prompts and messages                   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘

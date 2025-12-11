@@ -12,6 +12,7 @@ private:
 
   String lines[10];
   String questions[10];
+  String correctAnswers[10];
 
   int selectedLine;
   int topLine;

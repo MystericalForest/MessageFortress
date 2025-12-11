@@ -3,12 +3,24 @@
 FormManager::FormManager(DisplayManager &disp, KeypadManager &keys)
   : display(disp), keypad(keys), selectedLine(0), topLine(0)
 {
-  // Init svar
+  // Init koder
   String initLines[10] = {
-    "Svar 1", "Svar 2", "Svar 3", "Svar 4", "Svar 5",
-    "Svar 6", "Svar 7", "Svar 8", "Svar 9", "Svar 10"
+    "Kode 1", "Kode 2", "Kode 3", "Kode 4", "Kode 5",
+    "Kode 6", "Kode 7", "Kode 8", "Kode 9", "Kode 10"
   };
   for (int i = 0; i < 10; i++) lines[i] = initLines[i];
+
+  // Init korrekte svar
+  correctAnswers[0] = "24";
+  correctAnswers[1] = "156";
+  correctAnswers[2] = "37";
+  correctAnswers[3] = "9842";
+  correctAnswers[4] = "3";
+  correctAnswers[5] = "12";
+  correctAnswers[6] = "450";
+  correctAnswers[7] = "7";
+  correctAnswers[8] = "1337";
+  correctAnswers[9] = "220";
 
   // Init spørgsmål
   String initQuestions[10] = {
@@ -39,12 +51,16 @@ void FormManager::editLine(int index) {
     char key = keypad.getKey();
     if (key) {
       if (key == '#') {       // Gem
-        lines[index] = input;
+        if (input == correctAnswers[index]) {
+          lines[index] = "Kode " + String(index + 1) + " " + input + " ✓";
+        } else {
+          lines[index] = "Kode " + String(index + 1) + " " + input;
+        }
         break;
       } else if (key == 'D') { // Fortryd
         break;
       } else if (isdigit(key)) {
-        if (input.length() < 16) {
+        if (input.length() < 10) {
           input += key;
           display.printInput(input);
         }
