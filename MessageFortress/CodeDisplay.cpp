@@ -14,6 +14,9 @@ void CodeDisplay::begin() {
   pinMode(_btn7, INPUT_PULLUP);
   pinMode(_btn8, INPUT_PULLUP);
   _enabled = false;  // Start som slukket
+  // Sluk alle segmenter ved opstart
+  uint8_t blank[] = {0x00, 0x00, 0x00, 0x00};
+  _display.setSegments(blank);
   _display.setBrightness(0x00);  // Slukket brightness
 }
 
@@ -70,7 +73,8 @@ int CodeDisplay::getCode() {
 
 void CodeDisplay::update() {
   if (!_enabled) {
-    return;  // Gør intet hvis ikke enabled
+    turnOff();
+    return;
   }
   
   if (_startupActive) {
@@ -104,8 +108,10 @@ void CodeDisplay::startStartup() {
 
 void CodeDisplay::turnOff() {
   _enabled = false;
+  // Sluk alle segmenter eksplicit
+  uint8_t blank[] = {0x00, 0x00, 0x00, 0x00};
+  _display.setSegments(blank);
   _display.setBrightness(0x00, false);
-  _display.clear();
 }
 
 void CodeDisplay::turnOn() {
