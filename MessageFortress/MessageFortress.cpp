@@ -59,12 +59,15 @@ void MessageFortress::updateDisplayState() {
     bool keyPressed = (digitalRead(keyPin) == LOW);
     
     if (keyPressed && !displayEnabled) {
-        // Tænd display
+        // Tænd begge displays
         displayEnabled = true;
+        display.turnOn();
         form.show();
+        lockSys.getCodeDisplay().turnOn();
     } else if (!keyPressed && displayEnabled) {
-        // Sluk display
+        // Sluk begge displays
         displayEnabled = false;
         display.clear();
+        lockSys.getCodeDisplay().turnOff();
     }
 }

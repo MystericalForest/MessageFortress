@@ -70,3 +70,12 @@ void CodeDisplay::update() {
   int code = getCode();
   _display.showNumberDec(code, false);
 }
+
+void CodeDisplay::turnOff() {
+  _display.setBrightness(0x00);
+  _display.clear();
+}
+
+void CodeDisplay::turnOn() {
+  _display.setBrightness(0x0f);
+}

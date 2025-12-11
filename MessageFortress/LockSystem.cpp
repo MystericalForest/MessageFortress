@@ -58,3 +58,7 @@ void LockSystem::update() {
         lockLED2.setBrightness(0);
     }
 }
+
+CodeDisplay& LockSystem::getCodeDisplay() {
+    return display;
+}

@@ -15,6 +15,7 @@ public:
   void printInput(const String &input);
   void clearLastChar(int pos);
   void clear();
+  void turnOn();
 };
 
 #endif

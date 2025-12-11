@@ -17,6 +17,8 @@ class CodeDisplay {
     CodeDisplay(int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio);
     void begin();
     void update();
+    void turnOff();
+    void turnOn();
 };
 
 #endif

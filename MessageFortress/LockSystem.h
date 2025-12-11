@@ -27,6 +27,7 @@ public:
     LockSystem(int c1, int c2, int l1, int l2, int redPin, int greenPin,  int keyPin, int connPin, int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio);
     void setLocked(bool state);
     void update();
+    CodeDisplay& getCodeDisplay();
 };
 
 #endif

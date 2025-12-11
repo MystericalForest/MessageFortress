@@ -39,4 +39,9 @@ void DisplayManager::clearLastChar(int pos) {
 
 void DisplayManager::clear() {
   lcd.clear();
+  lcd.noBacklight();
+}
+
+void DisplayManager::turnOn() {
+  lcd.backlight();
 }
