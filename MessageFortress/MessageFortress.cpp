@@ -43,6 +43,10 @@ void MessageFortress::update() {
     // Opdater startup sekvens hvis aktiv
     if (display.isStartupActive()) {
         display.updateStartup();
+        // Tjek om startup lige er blevet færdig
+        if (!display.isStartupActive()) {
+            form.show();  // Vis form når startup er færdig
+        }
     }
     
     // Kun håndter input hvis display er tændt og startup er færdig
@@ -73,12 +77,5 @@ void MessageFortress::updateDisplayState() {
         displayEnabled = false;
         display.clear();
         lockSys.getCodeDisplay().turnOff();
-    } else if (displayEnabled && !display.isStartupActive()) {
-        // Vis normal form når startup er færdig
-        static bool formShown = false;
-        if (!formShown) {
-            form.show();
-            formShown = true;
-        }
     }
 }
