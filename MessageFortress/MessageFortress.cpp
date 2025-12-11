@@ -30,6 +30,7 @@ MessageFortress::MessageFortress()
 void MessageFortress::begin() {
     pinMode(keyPin, INPUT_PULLUP);
     display.begin();
+    lockSys.setFormManager(&form);
     
     // Tjek KEY_PIN status ved opstart og sæt displays korrekt
     bool keyPressed = (digitalRead(keyPin) == LOW);
@@ -94,6 +95,7 @@ void MessageFortress::update() {
 
 /**
  * Opdaterer display tilstand baseret på KEY_PIN
+ * Box_Status styres nu af FormManager's allCodesSolved()
  */
 void MessageFortress::updateDisplayState() {
     bool keyPressed = (digitalRead(keyPin) == LOW);
@@ -103,11 +105,13 @@ void MessageFortress::updateDisplayState() {
         displayEnabled = true;
         display.setState(DisplayManager::STARTUP);
         lockSys.getCodeDisplay().setState(CodeDisplay::STARTUP);
+        lockSys.setDisplayEnabled(true);
     } else if (!keyPressed && displayEnabled) {
         // Sluk begge displays og nulstil adgangskontrol
         displayEnabled = false;
         display.setState(DisplayManager::OFF);
         lockSys.getCodeDisplay().setState(CodeDisplay::OFF);
+        lockSys.setDisplayEnabled(false);
         accessControl.begin();  // Nulstil adgangskontrol
     }
 }

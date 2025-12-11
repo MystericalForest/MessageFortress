@@ -6,7 +6,7 @@
  */
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           MESSAGE FORTRESS SYSTEM                          │
+│                           MESSAGE FORTRESS SYSTEM                           │
 └─────────────────────────────────────────────────────────────────────────────┘
 
                               ┌─────────────────┐
@@ -144,7 +144,7 @@
 │                                                                             │
 │ Layer 1: KEY_PIN physical switch - Controls display state machines          │
 │ Layer 2: AccessControl - Requires ACCESS_CODE (324373) from config.h        │
-│ Layer 3: CodeDisplay state - Only shows codes in ON state after access     │
+│ Layer 3: CodeDisplay state - Only shows codes in ON state after access      │
 │                                                                             │
 │ CodeDisplay State Management:                                               │
 │ - OFF state: Blank segments, brightness = 0                                 │
@@ -152,7 +152,7 @@
 │ - ON state: Shows 4-digit codes based on 8-button combinations              │
 │                                                                             │
 │ DisplayManager State Management:                                            │
-│ - OFF state: LCD backlight off, clear display                              │
+│ - OFF state: LCD backlight off, clear display                               │
 │ - STARTUP state: Progressive dot animation (16 dots)                        │
 │ - ON state: Normal LCD operation for prompts and messages                   │
 │                                                                             │

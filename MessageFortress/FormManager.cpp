@@ -75,6 +75,15 @@ void FormManager::editLine(int index) {
   show();
 }
 
+bool FormManager::allCodesSolved() {
+  for (int i = 0; i < 10; i++) {
+    if (lines[i].indexOf("✓") == -1) {
+      return false;
+    }
+  }
+  return true;
+}
+
 void FormManager::handleInput(char key) {
   switch (key) {
     case 'A': // op

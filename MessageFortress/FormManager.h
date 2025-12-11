@@ -22,6 +22,7 @@ public:
   FormManager(DisplayManager &disp, KeypadManager &keys);
   void show();
   void handleInput(char key);
+  bool allCodesSolved();
 };
 
 #endif

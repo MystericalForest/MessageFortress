@@ -3,7 +3,7 @@
 Box_Status::Box_Status(uint8_t redPin, uint8_t greenPin, uint8_t connPin)
 : _redPin(redPin), _greenPin(greenPin), _connPin(connPin),
   _currentState(NOT_CONNECTED), _lastKnownState(LOCKED),
-  _lastBlinkTime(0), _redLedState(false)
+  _lastBlinkTime(0), _redLedState(false), _displayEnabled(false)
 {}
 
 void Box_Status::begin() {
@@ -35,6 +35,10 @@ void Box_Status::setLocked(bool locked) {
   }
 }
 
+void Box_Status::setDisplayEnabled(bool enabled) {
+  _displayEnabled = enabled;
+}
+
 Box_Status::State Box_Status::getStatus() const {
     return _currentState;
 }
@@ -52,6 +56,13 @@ void Box_Status::applyState() {
 }
 
 void Box_Status::update() {
+    // Hvis displays er slukket, sluk begge LEDs
+    if (!_displayEnabled) {
+        digitalWrite(_redPin, LOW);
+        digitalWrite(_greenPin, LOW);
+        return;
+    }
+
     // Check forbindelsen først
     if (!isConnected()) {
         _currentState = NOT_CONNECTED;

@@ -1,4 +1,5 @@
 #include "LockSystem.h"
+#include "FormManager.h"
 #include <Arduino.h>
 
 LockSystem::LockSystem(int c1, int c2, int l1, int l2, int redPin, int greenPin, int keyPin, int connPin, int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio)
@@ -7,7 +8,7 @@ LockSystem::LockSystem(int c1, int c2, int l1, int l2, int redPin, int greenPin,
       display(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, clk, dio),
       locked(true), lastUpdate(0), fadeDelay(15),
       brightness1(128), brightness2(255),
-      fadeStep(2), direction(1), keyPin(keyPin) {
+      fadeStep(2), direction(1), keyPin(keyPin), formManager(nullptr) {
         pinMode(keyPin, INPUT_PULLUP);
         setLocked(true);
         connected=false;
@@ -20,11 +21,15 @@ void LockSystem::setLocked(bool state) {
     status.setLocked(state);
 }
 
+void LockSystem::setFormManager(FormManager* fm) {
+    formManager = fm;
+}
+
 void LockSystem::update() {
-    int _key=digitalRead(keyPin);
-    if (_key == HIGH) {
-        setLocked(false); }
-    else {
+    // Tjek om alle koder er løst i stedet for KEY_PIN
+    if (formManager && formManager->allCodesSolved()) {
+        setLocked(false);
+    } else {
         setLocked(true);
     }
     unsigned long now = millis();
@@ -61,4 +66,12 @@ void LockSystem::update() {
 
 CodeDisplay& LockSystem::getCodeDisplay() {
     return display;
+}
+
+bool LockSystem::isUnlocked() {
+    return !locked;
+}
+
+void LockSystem::setDisplayEnabled(bool enabled) {
+    status.setDisplayEnabled(enabled);
 }
