@@ -17,11 +17,14 @@ private:
     FormManager form;
     LockSystem lockSys;
     bool isLocked;
+    bool displayEnabled;
+    int keyPin;
 
 public:
     MessageFortress();
     void begin();
     void update();
+    void updateDisplayState();
 };
 
 #endif

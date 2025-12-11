@@ -19,14 +19,17 @@ MessageFortress::MessageFortress()
               BUTTON_1_PIN, BUTTON_2_PIN, BUTTON_3_PIN, BUTTON_4_PIN,
               BUTTON_5_PIN, BUTTON_6_PIN, BUTTON_7_PIN, BUTTON_8_PIN,
               DISPLAY_CLK_PIN, DISPLAY_DIO_PIN),
-      isLocked(true) {}
+      isLocked(true),
+      displayEnabled(false),
+      keyPin(KEY_PIN) {}
 
 /**
  * Initialiser alle subsystemer
  */
 void MessageFortress::begin() {
+    pinMode(keyPin, INPUT_PULLUP);
     display.begin();
-    form.show();
+    updateDisplayState();
 }
 
 /**
@@ -34,12 +37,34 @@ void MessageFortress::begin() {
  * Håndterer input og opdaterer alle systemer
  */
 void MessageFortress::update() {
-    // Håndter keypad input
-    char key = keypad.getKey();
-    if (key) {
-        form.handleInput(key);
+    // Tjek KEY_PIN for display on/off
+    updateDisplayState();
+    
+    // Kun håndter input hvis display er tændt
+    if (displayEnabled) {
+        char key = keypad.getKey();
+        if (key) {
+            form.handleInput(key);
+        }
     }
     
     // Opdater lock system
     lockSys.update();
+}
+
+/**
+ * Opdaterer display tilstand baseret på KEY_PIN
+ */
+void MessageFortress::updateDisplayState() {
+    bool keyPressed = (digitalRead(keyPin) == LOW);
+    
+    if (keyPressed && !displayEnabled) {
+        // Tænd display
+        displayEnabled = true;
+        form.show();
+    } else if (!keyPressed && displayEnabled) {
+        // Sluk display
+        displayEnabled = false;
+        display.clear();
+    }
 }
