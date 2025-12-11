@@ -10,7 +10,7 @@
  * Konstruktør for AccessControl
  */
 AccessControl::AccessControl(DisplayManager& disp, KeypadManager& key)
-    : display(disp), keypad(key), currentInput(""), accessGranted(false) {}
+    : display(disp), keypad(key), currentInput(""), accessGranted(false), showingError(false), errorStartTime(0) {}
 
 /**
  * Initialiser AccessControl
@@ -18,6 +18,7 @@ AccessControl::AccessControl(DisplayManager& disp, KeypadManager& key)
 void AccessControl::begin() {
     accessGranted = false;
     currentInput = "";
+    showingError = false;
     showPrompt();
 }
 
@@ -34,12 +35,11 @@ void AccessControl::handleInput(char key) {
         if (currentInput == String(ACCESS_CODE)) {
             accessGranted = true;
             display.showQuestion("Adgang godkendt");
-            delay(1000); // Kort pause før skift
         } else {
             currentInput = "";
             display.showQuestion("Forkert kode!");
-            delay(1000);
-            showPrompt();
+            showingError = true;
+            errorStartTime = millis();
         }
     } else if (key >= '0' && key <= '9') {
         // Tilføj ciffer
@@ -60,6 +60,14 @@ bool AccessControl::isAccessGranted() {
 /**
  * Viser adgangskode prompt
  */
+void AccessControl::update() {
+    // Tjek om fejlbesked skal skjules
+    if (showingError && (millis() - errorStartTime > 2000)) {
+        showingError = false;
+        showPrompt();
+    }
+}
+
 void AccessControl::showPrompt() {
     display.showQuestion("Indtast kode:");
     display.printInput("");

@@ -34,10 +34,10 @@ void MessageFortress::begin() {
     // Tjek KEY_PIN status ved opstart og sæt displays korrekt
     bool keyPressed = (digitalRead(keyPin) == LOW);
     if (keyPressed) {
-        // KEY_PIN er trykket ved opstart - tænd displays med startup sekvens
+        // KEY_PIN er trykket ved opstart - tænd kun LCD display
         displayEnabled = true;
         display.turnOn();
-        lockSys.getCodeDisplay().turnOn();
+        // CodeDisplay tændes først efter korrekt adgangskode
     } else {
         // KEY_PIN ikke trykket ved opstart - hold displays slukket
         displayEnabled = false;
@@ -63,6 +63,11 @@ void MessageFortress::update() {
         }
     }
     
+    // Opdater AccessControl (for fejlbesked timer)
+    if (displayEnabled && !display.isStartupActive() && !accessControl.isAccessGranted()) {
+        accessControl.update();
+    }
+    
     // Kun håndter input hvis display er tændt og startup er færdig
     if (displayEnabled && !display.isStartupActive()) {
         char key = keypad.getKey();
@@ -72,6 +77,7 @@ void MessageFortress::update() {
                 accessControl.handleInput(key);
                 // Tjek om adgang lige er blevet givet
                 if (accessControl.isAccessGranted()) {
+                    lockSys.getCodeDisplay().turnOn();  // Tænd CodeDisplay når adgang givet
                     form.show();  // Skift til hovedsystem
                 }
             } else {
@@ -92,14 +98,15 @@ void MessageFortress::updateDisplayState() {
     bool keyPressed = (digitalRead(keyPin) == LOW);
     
     if (keyPressed && !displayEnabled) {
-        // Tænd begge displays med startup sekvens
+        // Tænd kun LCD display med startup sekvens
         displayEnabled = true;
         display.turnOn();  // Starter startup sekvens
-        lockSys.getCodeDisplay().turnOn();  // Starter startup sekvens
+        // CodeDisplay tændes først når adgangskode er korrekt
     } else if (!keyPressed && displayEnabled) {
-        // Sluk begge displays
+        // Sluk begge displays og nulstil adgangskontrol
         displayEnabled = false;
         display.clear();
         lockSys.getCodeDisplay().turnOff();
+        accessControl.begin();  // Nulstil adgangskontrol
     }
 }

@@ -15,11 +15,14 @@ private:
     KeypadManager& keypad;
     String currentInput;
     bool accessGranted;
+    bool showingError;
+    unsigned long errorStartTime;
 
 public:
     AccessControl(DisplayManager& disp, KeypadManager& key);
     void begin();
     void handleInput(char key);
+    void update();
     bool isAccessGranted();
     void showPrompt();
 };
