@@ -9,9 +9,14 @@ class CodeDisplay {
     int _btn1, _btn2, _btn3, _btn4, _btn5, _btn6, _btn7, _btn8;
     int _clk, _dio;
     TM1637Display _display;
+    bool _startupActive;
+    int _startupCount;
+    unsigned long _lastStartupTime;
 
     int readInputs();
     int getCode();
+    void updateStartup();
+    void startStartup();
 
   public:
     CodeDisplay(int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio);

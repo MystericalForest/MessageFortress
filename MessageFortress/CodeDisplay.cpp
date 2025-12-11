@@ -1,7 +1,8 @@
 #include "CodeDisplay.h"
 
 CodeDisplay::CodeDisplay(int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio)
-  : _btn1(btn1), _btn2(btn2), _btn3(btn3), _btn4(btn4), _btn5(btn5), _btn6(btn6), _btn7(btn7), _btn8(btn8), _clk(clk), _dio(dio), _display(clk, dio) {}
+  : _btn1(btn1), _btn2(btn2), _btn3(btn3), _btn4(btn4), _btn5(btn5), _btn6(btn6), _btn7(btn7), _btn8(btn8), _clk(clk), _dio(dio), _display(clk, dio),
+    _startupActive(false), _startupCount(0), _lastStartupTime(0) {}
 
 void CodeDisplay::begin() {
   pinMode(_btn1, INPUT_PULLUP);
@@ -67,15 +68,41 @@ int CodeDisplay::getCode() {
 }
 
 void CodeDisplay::update() {
-  int code = getCode();
-  _display.showNumberDec(code, false);
+  if (_startupActive) {
+    updateStartup();
+  } else {
+    int code = getCode();
+    _display.showNumberDec(code, false);
+  }
+}
+
+void CodeDisplay::updateStartup() {
+  unsigned long now = millis();
+  if (now - _lastStartupTime >= 1000) {
+    _startupCount++;
+    if (_startupCount <= 10) {
+      _display.showNumberDec(_startupCount, false);
+      _lastStartupTime = now;
+    } else {
+      _startupActive = false;
+    }
+  }
+}
+
+void CodeDisplay::startStartup() {
+  _startupActive = true;
+  _startupCount = 0;
+  _lastStartupTime = millis();
+  _display.showNumberDec(1, false);
+  _startupCount = 1;
 }
 
 void CodeDisplay::turnOff() {
-  _display.setBrightness(0x00);
+  _display.setBrightness(0x00, false);
   _display.clear();
 }
 
 void CodeDisplay::turnOn() {
-  _display.setBrightness(0x0f);
+  _display.setBrightness(0x0f, true);
+  startStartup();
 }

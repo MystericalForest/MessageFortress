@@ -40,8 +40,13 @@ void MessageFortress::update() {
     // Tjek KEY_PIN for display on/off
     updateDisplayState();
     
-    // Kun håndter input hvis display er tændt
-    if (displayEnabled) {
+    // Opdater startup sekvens hvis aktiv
+    if (display.isStartupActive()) {
+        display.updateStartup();
+    }
+    
+    // Kun håndter input hvis display er tændt og startup er færdig
+    if (displayEnabled && !display.isStartupActive()) {
         char key = keypad.getKey();
         if (key) {
             form.handleInput(key);
@@ -59,15 +64,21 @@ void MessageFortress::updateDisplayState() {
     bool keyPressed = (digitalRead(keyPin) == LOW);
     
     if (keyPressed && !displayEnabled) {
-        // Tænd begge displays
+        // Tænd begge displays med startup sekvens
         displayEnabled = true;
-        display.turnOn();
-        form.show();
-        lockSys.getCodeDisplay().turnOn();
+        display.turnOn();  // Starter startup sekvens
+        lockSys.getCodeDisplay().turnOn();  // Starter startup sekvens
     } else if (!keyPressed && displayEnabled) {
         // Sluk begge displays
         displayEnabled = false;
         display.clear();
         lockSys.getCodeDisplay().turnOff();
+    } else if (displayEnabled && !display.isStartupActive()) {
+        // Vis normal form når startup er færdig
+        static bool formShown = false;
+        if (!formShown) {
+            form.show();
+            formShown = true;
+        }
     }
 }

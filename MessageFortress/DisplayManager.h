@@ -7,6 +7,9 @@
 class DisplayManager {
 private:
   LiquidCrystal_I2C lcd;
+  bool _startupActive;
+  int _startupCount;
+  unsigned long _lastStartupTime;
 public:
   DisplayManager();
   void begin();
@@ -16,6 +19,9 @@ public:
   void clearLastChar(int pos);
   void clear();
   void turnOn();
+  void updateStartup();
+  void startStartup();
+  bool isStartupActive();
 };
 
 #endif
