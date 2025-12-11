@@ -1,0 +1,128 @@
+/**
+ * MESSAGE FORTRESS - CLASS DIAGRAM
+ * Escaperoom Krypterings Device
+ * 
+ * ASCII Class Diagram showing the complete system architecture
+ */
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           MESSAGE FORTRESS SYSTEM                          │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                              ┌─────────────────┐
+                              │ MessageFortress │ ◄── Main Controller
+                              ├─────────────────┤
+                              │ - display       │
+                              │ - keypad        │
+                              │ - form          │
+                              │ - accessControl │
+                              │ - lockSys       │
+                              │ - displayEnabled│
+                              │ - keyPin        │
+                              ├─────────────────┤
+                              │ + begin()       │
+                              │ + update()      │
+                              │ + updateDisplayState() │
+                              └─────────────────┘
+                                       │
+                    ┌──────────────────┼──────────────────┐
+                    │                  │                  │
+                    ▼                  ▼                  ▼
+
+        ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+        │ DisplayManager  │  │  KeypadManager  │  │   LockSystem    │
+        ├─────────────────┤  ├─────────────────┤  ├─────────────────┤
+        │ - lcd           │  │ - keypad        │  │ - codeLED1/2    │
+        │ - _startupActive│  ├─────────────────┤  │ - lockLED1/2    │
+        │ - _startupCount │  │ + getKey()      │  │ - status        │
+        │ - _lastStartupTime│                │  │ - display       │
+        ├───────────────────┤                │  │ - locked        │
+        │ + begin()         │                │  │ - keyPin        │
+        │ + showLines()     │                │  ├─────────────────┤
+        │ + showQuestion()  │                │  │ + setLocked()   │
+        │ + clear()         │                │  │ + update()      │
+        │ + turnOn()        │                │  │ + getCodeDisplay()│
+        │ + updateStartup() │                │  └─────────────────┘
+        └───────────────────┘                │           │
+                    │                        │           │ contains
+                    │ used by                │           ▼
+                    ▼                        │  ┌─────────────────┐
+        ┌─────────────────┐                  │  │   CodeDisplay   │
+        │  FormManager    │                  │  ├─────────────────┤
+        ├─────────────────┤                  │  │ - _btn1-8       │
+        │ - display       │                  │  │ - _display      │
+        │ - keypad        │                  │  │ - _enabled      │
+        ├─────────────────┤                  │  │ - _startupActive│
+        │ + show()        │                  │  ├─────────────────┤
+        │ + handleInput() │                  │  │ + begin()       │
+        └─────────────────┘                  │  │ + update()      │
+                    ▲                        │  │ + readInputs()  │
+                    │ used by                │  │ + getCode()     │
+                    │                        │  │ + turnOn()      │
+        ┌────────────────────┐               │  │ + turnOff()     │
+        │ AccessControl      │               │  │ + enable()      │
+        ├────────────────────┤               │  └─────────────────┘
+        │ - display          │               │           │
+        │ - keypad           │               │           │ contains
+        │ - currentInput     │               │           ▼
+        │ - accessGranted    │               │  ┌─────────────────┐
+        │ - showingError     │               │  │   Box_Status    │
+        ├────────────────────┤               │  ├─────────────────┤
+        │ + begin()          │               │  │ - _redPin       │
+        │ + handleInput()    │               │  │ - _greenPin     │
+        │ + update()         │               │  │ - _connPin      │
+        │ + isAccessGranted()│               │  │ - _currentState │
+        │ + showPrompt()     │               │  ├─────────────────┤
+        └────────────────────┘               │  │ + begin()       │
+                                             │  │ + update()      │
+                                             │  │ + setLocked()   │
+                                             │  └─────────────────┘
+                                             │
+                                             │ contains
+                                             ▼
+                                    ┌──────────────────┐
+                                    │      LED         │
+                                    ├──────────────────┤
+                                    │ - pin            │
+                                    ├──────────────────┤
+                                    │ + setBrightness()│
+                                    └──────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              EXTERNAL DEPENDENCIES                          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ config.h          - Pin definitions, timing constants, ACCESS_CODE          │
+│ TM1637Display.h   - External library for 7-segment display                  │
+│ LiquidCrystal_I2C.h - External library for LCD display                      │
+│ Keypad.h          - External library for keypad input                       │
+│ Arduino.h         - Arduino core functions                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              SYSTEM FLOW                                    │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ 1. KEY_PIN pressed → LCD startup sequence (1-10)                            │
+│ 2. AccessControl shows "Indtast kode:" prompt                               │
+│ 3. User enters ACCESS_CODE (324373) via keypad                              │
+│ 4. If correct → CodeDisplay.enable() → shows 256 codes via 8 buttons        │
+│ 5. FormManager handles normal operation questions                           │
+│ 6. LockSystem controls LED states and CodeDisplay visibility                │
+│ 7. KEY_PIN released → All displays off, system reset                        │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            SECURITY LAYERS                                  │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│ Layer 1: KEY_PIN physical switch - Must be pressed to power displays        │
+│ Layer 2: AccessControl - Requires ACCESS_CODE (324373) from config.h        │
+│ Layer 3: CodeDisplay._enabled - Only shows codes after access granted       │
+│                                                                             │
+│ CodeDisplay States:                                                         │
+│ - turnOn(): Sets brightness but _enabled = false (blank segments)           │
+│ - enable(): Sets _enabled = true and starts showing codes                   │
+│ - turnOff(): Sets _enabled = false and brightness = 0                       │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
