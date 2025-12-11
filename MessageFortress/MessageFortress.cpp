@@ -34,15 +34,15 @@ void MessageFortress::begin() {
     // Tjek KEY_PIN status ved opstart og sæt displays korrekt
     bool keyPressed = (digitalRead(keyPin) == LOW);
     if (keyPressed) {
-        // KEY_PIN er trykket ved opstart - tænd kun LCD display
+        // KEY_PIN er trykket ved opstart - start LCD startup, CodeDisplay startup
         displayEnabled = true;
-        display.turnOn();
-        // CodeDisplay tændes først efter korrekt adgangskode
+        display.setState(DisplayManager::STARTUP);
+        lockSys.getCodeDisplay().setState(CodeDisplay::STARTUP);
     } else {
         // KEY_PIN ikke trykket ved opstart - hold displays slukket
         displayEnabled = false;
-        display.clear();
-        lockSys.getCodeDisplay().turnOff();
+        display.setState(DisplayManager::OFF);
+        lockSys.getCodeDisplay().setState(CodeDisplay::OFF);
     }
 }
 
@@ -55,21 +55,21 @@ void MessageFortress::update() {
     updateDisplayState();
     
     // Opdater startup sekvens hvis aktiv
-    if (display.isStartupActive()) {
+    if (display.getState() == DisplayManager::STARTUP) {
         display.updateStartup();
         // Tjek om startup lige er blevet færdig
-        if (!display.isStartupActive()) {
+        if (display.getState() == DisplayManager::OFF) {
             accessControl.showPrompt();  // Vis adgangskode prompt når startup er færdig
         }
     }
     
     // Opdater AccessControl (for fejlbesked timer)
-    if (displayEnabled && !display.isStartupActive() && !accessControl.isAccessGranted()) {
+    if (displayEnabled && display.getState() != DisplayManager::STARTUP && !accessControl.isAccessGranted()) {
         accessControl.update();
     }
     
     // Kun håndter input hvis display er tændt og startup er færdig
-    if (displayEnabled && !display.isStartupActive()) {
+    if (displayEnabled && display.getState() != DisplayManager::STARTUP) {
         char key = keypad.getKey();
         if (key) {
             if (!accessControl.isAccessGranted()) {
@@ -77,7 +77,8 @@ void MessageFortress::update() {
                 accessControl.handleInput(key);
                 // Tjek om adgang lige er blevet givet
                 if (accessControl.isAccessGranted()) {
-                    lockSys.getCodeDisplay().enable();  // Aktiver CodeDisplay når adgang givet
+                    lockSys.getCodeDisplay().setState(CodeDisplay::ON);  // Aktiver CodeDisplay når adgang givet
+                    display.setState(DisplayManager::ON);  // Sæt LCD til ON tilstand
                     form.show();  // Skift til hovedsystem
                 }
             } else {
@@ -98,15 +99,15 @@ void MessageFortress::updateDisplayState() {
     bool keyPressed = (digitalRead(keyPin) == LOW);
     
     if (keyPressed && !displayEnabled) {
-        // Tænd kun LCD display med startup sekvens
+        // Tænd begge displays med startup sekvens
         displayEnabled = true;
-        display.turnOn();  // Starter startup sekvens
-        // CodeDisplay tændes først når adgangskode er korrekt
+        display.setState(DisplayManager::STARTUP);
+        lockSys.getCodeDisplay().setState(CodeDisplay::STARTUP);
     } else if (!keyPressed && displayEnabled) {
         // Sluk begge displays og nulstil adgangskontrol
         displayEnabled = false;
-        display.clear();
-        lockSys.getCodeDisplay().turnOff();
+        display.setState(DisplayManager::OFF);
+        lockSys.getCodeDisplay().setState(CodeDisplay::OFF);
         accessControl.begin();  // Nulstil adgangskontrol
     }
 }

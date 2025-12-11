@@ -5,9 +5,16 @@
 #include <Arduino.h>
 
 class DisplayManager {
+public:
+  enum DisplayState {
+    OFF,      // Slukket - ingen backlight
+    STARTUP,  // Startup animation kører
+    ON        // Tændt - normal drift
+  };
+  
 private:
   LiquidCrystal_I2C lcd;
-  bool _startupActive;
+  DisplayState _state;
   int _startupCount;
   unsigned long _lastStartupTime;
 public:
@@ -18,10 +25,9 @@ public:
   void printInput(const String &input);
   void clearLastChar(int pos);
   void clear();
-  void turnOn();
+  void setState(DisplayState newState);
+  DisplayState getState();
   void updateStartup();
-  void startStartup();
-  bool isStartupActive();
 };
 
 #endif

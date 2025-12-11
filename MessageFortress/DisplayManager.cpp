@@ -1,10 +1,10 @@
 #include "DisplayManager.h"
 
-DisplayManager::DisplayManager() : lcd(0x27, 16, 2), _startupActive(false), _startupCount(0), _lastStartupTime(0) {}
+DisplayManager::DisplayManager() : lcd(0x27, 16, 2), _state(OFF), _startupCount(0), _lastStartupTime(0) {}
 
 void DisplayManager::begin() {
   lcd.init();
-  // Baggrundslys styres nu af KEY_PIN status
+  setState(OFF);
 }
 
 void DisplayManager::showLines(String line1, String line2, int selectedIndex) {
@@ -42,9 +42,30 @@ void DisplayManager::clear() {
   lcd.noBacklight();
 }
 
-void DisplayManager::turnOn() {
-  lcd.backlight();
-  startStartup();
+void DisplayManager::setState(DisplayState newState) {
+  _state = newState;
+  
+  switch (_state) {
+    case OFF:
+      lcd.clear();
+      lcd.noBacklight();
+      break;
+      
+    case STARTUP:
+      lcd.backlight();
+      _startupCount = 0;
+      _lastStartupTime = millis();
+      lcd.clear();
+      break;
+      
+    case ON:
+      lcd.backlight();
+      break;
+  }
+}
+
+DisplayManager::DisplayState DisplayManager::getState() {
+  return _state;
 }
 
 void DisplayManager::updateStartup() {
@@ -57,21 +78,7 @@ void DisplayManager::updateStartup() {
       lcd.print(_startupCount);
       _lastStartupTime = now;
     } else {
-      _startupActive = false;
+      setState(OFF);  // Gå til OFF efter startup
     }
   }
-}
-
-void DisplayManager::startStartup() {
-  _startupActive = true;
-  _startupCount = 0;
-  _lastStartupTime = millis();
-  lcd.clear();
-  lcd.setCursor(7, 0);
-  lcd.print("1");
-  _startupCount = 1;
-}
-
-bool DisplayManager::isStartupActive() {
-  return _startupActive;
 }
