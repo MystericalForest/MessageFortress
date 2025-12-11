@@ -1,4 +1,5 @@
 #include "DisplayManager.h"
+#include "config.h"
 
 DisplayManager::DisplayManager() : lcd(0x27, 16, 2), _state(OFF), _startupCount(0), _lastStartupTime(0) {}
 
@@ -70,12 +71,15 @@ DisplayManager::DisplayState DisplayManager::getState() {
 
 void DisplayManager::updateStartup() {
   unsigned long now = millis();
-  if (now - _lastStartupTime >= 1000) {
+  if (now - _lastStartupTime >= LCD_STARTUP_DELAY) {  // 750ms mellem punktummer
     _startupCount++;
-    if (_startupCount <= 10) {
+    if (_startupCount <= 16) {  // 16 punktummer for at fylde øverste linje
       lcd.clear();
-      lcd.setCursor(7, 0);
-      lcd.print(_startupCount);
+      lcd.setCursor(0, 0);
+      // Vis punktummer fra venstre til højre
+      for (int i = 0; i < _startupCount; i++) {
+        lcd.print(".");
+      }
       _lastStartupTime = now;
     } else {
       setState(ON);  // Gå til ON efter startup så LCD er tændt

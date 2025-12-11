@@ -1,4 +1,5 @@
 #include "CodeDisplay.h"
+#include "config.h"
 
 CodeDisplay::CodeDisplay(int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio)
   : _btn1(btn1), _btn2(btn2), _btn3(btn3), _btn4(btn4), _btn5(btn5), _btn6(btn6), _btn7(btn7), _btn8(btn8), _clk(clk), _dio(dio), _display(clk, dio),
@@ -92,46 +93,47 @@ void CodeDisplay::update() {
 
 void CodeDisplay::updateStartup() {
   unsigned long now = millis();
-  if (now - _lastStartupTime >= 500) {  // 500ms mellem steps
+  if (now - _lastStartupTime >= CODE_STARTUP_DELAY) {  // 500ms mellem steps
     _startupCount++;
     
     // 25-step segment animation pattern
     uint8_t patterns[][4] = {
-      // Fase 1: Enkelt segment roterer gennem digit 1 (steps 1-7)
-      {0x01, 0x00, 0x00, 0x00},  // 1: Top
-      {0x02, 0x00, 0x00, 0x00},  // 2: Top-right
-      {0x04, 0x00, 0x00, 0x00},  // 3: Bottom-right
-      {0x08, 0x00, 0x00, 0x00},  // 4: Bottom
-      {0x10, 0x00, 0x00, 0x00},  // 5: Bottom-left
-      {0x20, 0x00, 0x00, 0x00},  // 6: Top-left
-      {0x40, 0x00, 0x00, 0x00},  // 7: Middle
+      // Første ciffer
+      {0x01, 0x00, 0x00, 0x00},  // 1: Digit 1 Top
+      {0x02, 0x00, 0x00, 0x00},  // 2: Digit 1 Top-right
+      {0x04, 0x00, 0x00, 0x00},  // 3: Digit 1 Bottom-right
+      {0x08, 0x00, 0x00, 0x00},  // 4: Digit 1 Bottom
+      {0x10, 0x00, 0x00, 0x00},  // 5: Digit 1 Bottom-left
+      {0x20, 0x00, 0x00, 0x00},  // 6: Digit 1 Top-left
+      // Andet ciffer
+      {0x00, 0x01, 0x00, 0x00},  // 7: digit 2 top
+      {0x00, 0x02, 0x00, 0x00},  // 8: Digit 2 Top-right
+      {0x00, 0x04, 0x00, 0x00},  // 9: Digit 2 Bottom-right
+      {0x00, 0x08, 0x00, 0x00},  // 10: Digit 2 Bottom
+      {0x00, 0x10, 0x00, 0x00},  // 11: Digit 2 Bottom-left
+      {0x00, 0x20, 0x00, 0x00},  // 12: Digit 2 Top-left
+      // Tredje ciffer
+      {0x00, 0x00, 0x01, 0x00},  // 13: Digit 3 Top
+      {0x00, 0x00, 0x02, 0x00},  // 14: Digit 3 Top-right
+      {0x00, 0x00, 0x04, 0x00},  // 15: Digit 3 Bottom-right
+      {0x00, 0x00, 0x08, 0x00},  // 16: Digit 3 Bottom
+      {0x00, 0x00, 0x10, 0x00},  // 17: Digit 3 Bottom-left
+      {0x00, 0x00, 0x20, 0x00},  // 18: Digit 3 Top-left
+      // Fjerde ciffer
+      {0x00, 0x00, 0x00, 0x01},  // 19: digit 4 top
+      {0x00, 0x00, 0x00, 0x02},  // 20: Digit 4 Top-right
+      {0x00, 0x00, 0x00, 0x04},  // 21: Digit 4 Bottom-right
+      {0x00, 0x00, 0x00, 0x08},  // 22: Digit 4 Bottom
+      {0x00, 0x00, 0x00, 0x10},  // 23: Digit 4 Bottom-left
+      {0x00, 0x00, 0x00, 0x20},  // 24: Digit 4 Top-left
       
-      // Fase 2: Fyld digit 1, start digit 2 (steps 8-14)
-      {0x3F, 0x01, 0x00, 0x00},  // 8: Digit 1 fuld, digit 2 top
-      {0x3F, 0x03, 0x00, 0x00},  // 9: Digit 1 fuld, digit 2 top+top-right
-      {0x3F, 0x07, 0x00, 0x00},  // 10: Digit 1 fuld, digit 2 top+top-right+bottom-right
-      {0x3F, 0x0F, 0x00, 0x00},  // 11: Digit 1 fuld, digit 2 top+right+bottom
-      {0x3F, 0x1F, 0x00, 0x00},  // 12: Digit 1 fuld, digit 2 top+right+bottom+bottom-left
-      {0x3F, 0x3F, 0x00, 0x00},  // 13: Digit 1+2 fuld
-      {0x3F, 0x3F, 0x01, 0x00},  // 14: Digit 1+2 fuld, digit 3 top
-      
-      // Fase 3: Fyld digit 3, start digit 4 (steps 15-21)
-      {0x3F, 0x3F, 0x03, 0x00},  // 15: Digit 3 top+top-right
-      {0x3F, 0x3F, 0x07, 0x00},  // 16: Digit 3 top+right
-      {0x3F, 0x3F, 0x0F, 0x00},  // 17: Digit 3 top+right+bottom
-      {0x3F, 0x3F, 0x1F, 0x00},  // 18: Digit 3 næsten fuld
-      {0x3F, 0x3F, 0x3F, 0x00},  // 19: Digit 1+2+3 fuld
-      {0x3F, 0x3F, 0x3F, 0x01},  // 20: Digit 4 top
-      {0x3F, 0x3F, 0x3F, 0x03},  // 21: Digit 4 top+top-right
-      
-      // Fase 4: Afslut digit 4 og finale (steps 22-25)
-      {0x3F, 0x3F, 0x3F, 0x0F},  // 22: Digit 4 næsten fuld
-      {0x3F, 0x3F, 0x3F, 0x3F},  // 23: Alle digits fulde
-      {0x00, 0x00, 0x00, 0x00},  // 24: Blank
-      {0x3F, 0x3F, 0x3F, 0x3F}   // 25: Alle fulde igen - klar til drift
+      // Afslut  og finale 
+      {0x3F, 0x3F, 0x3F, 0x3F},  // 25: Alle digits fulde
+      {0x00, 0x00, 0x00, 0x00},  // 26: Blank
+      {0x3F, 0x3F, 0x3F, 0x3F}   // 27: Alle fulde igen - klar til drift
     };
     
-    if (_startupCount <= 25) {
+    if (_startupCount <= 27) {
       _display.setSegments(patterns[_startupCount - 1]);
       _lastStartupTime = now;
     } else {

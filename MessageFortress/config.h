@@ -41,6 +41,10 @@
 #define FADE_DELAY          15      // LED fade hastighed (ms)
 #define BLINK_INTERVAL      500     // Status LED blink interval (ms)
 
+// ===== STARTUP ANIMATION TIMING =====
+#define LCD_STARTUP_DELAY   750     // LCD startup animation interval (ms)
+#define CODE_STARTUP_DELAY  500     // CodeDisplay startup animation interval (ms)
+
 // ===== LED FADE INDSTILLINGER =====
 #define BRIGHTNESS_MIN      64      // Minimum lysstyrke
 #define BRIGHTNESS_MAX      255     // Maximum lysstyrke
