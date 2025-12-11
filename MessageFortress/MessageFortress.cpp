@@ -58,7 +58,7 @@ void MessageFortress::update() {
     if (display.getState() == DisplayManager::STARTUP) {
         display.updateStartup();
         // Tjek om startup lige er blevet færdig
-        if (display.getState() == DisplayManager::OFF) {
+        if (display.getState() == DisplayManager::ON) {
             accessControl.showPrompt();  // Vis adgangskode prompt når startup er færdig
         }
     }

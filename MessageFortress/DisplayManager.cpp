@@ -78,7 +78,7 @@ void DisplayManager::updateStartup() {
       lcd.print(_startupCount);
       _lastStartupTime = now;
     } else {
-      setState(OFF);  // Gå til OFF efter startup
+      setState(ON);  // Gå til ON efter startup så LCD er tændt
     }
   }
 }
