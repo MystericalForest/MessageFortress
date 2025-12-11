@@ -7,7 +7,7 @@ LockSystem::LockSystem(int c1, int c2, int l1, int l2, int redPin, int greenPin,
       display(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, clk, dio),
       locked(true), lastUpdate(0), fadeDelay(15),
       brightness1(128), brightness2(255),
-      fadeStep(2), direction(1) {
+      fadeStep(2), direction(1), keyPin(keyPin) {
         pinMode(keyPin, INPUT_PULLUP);
         setLocked(true);
         connected=false;
