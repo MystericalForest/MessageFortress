@@ -14,6 +14,7 @@ public:
   void showQuestion(const String &question);
   void printInput(const String &input);
   void clearLastChar(int pos);
+  void clear();
 };
 
 #endif

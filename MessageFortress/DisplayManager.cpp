@@ -36,3 +36,7 @@ void DisplayManager::clearLastChar(int pos) {
   lcd.print(" ");
   lcd.setCursor(pos, 1);
 }
+
+void DisplayManager::clear() {
+  lcd.clear();
+}
