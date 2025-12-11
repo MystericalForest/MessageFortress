@@ -5,6 +5,7 @@
 #include "DisplayManager.h"
 #include "KeypadManager.h"
 #include "FormManager.h"
+#include "AccessControl.h"
 
 /**
  * MessageFortress hovedklasse
@@ -15,6 +16,7 @@ private:
     DisplayManager display;
     KeypadManager keypad;
     FormManager form;
+    AccessControl accessControl;
     LockSystem lockSys;
     bool isLocked;
     bool displayEnabled;

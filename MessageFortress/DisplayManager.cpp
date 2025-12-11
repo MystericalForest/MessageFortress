@@ -4,7 +4,7 @@ DisplayManager::DisplayManager() : lcd(0x27, 16, 2), _startupActive(false), _sta
 
 void DisplayManager::begin() {
   lcd.init();
-  lcd.backlight();
+  // Baggrundslys styres nu af KEY_PIN status
 }
 
 void DisplayManager::showLines(String line1, String line2, int selectedIndex) {

@@ -49,4 +49,7 @@
 // ===== DISPLAY INDSTILLINGER =====
 #define DISPLAY_BRIGHTNESS  0x0f    // Display lysstyrke (0x00-0x0f)
 
+// ===== ADGANGSKODE =====
+#define ACCESS_CODE         "324373"  // Adgangskode til hovedsystem
+
 #endif
