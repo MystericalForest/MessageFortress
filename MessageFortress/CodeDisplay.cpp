@@ -72,19 +72,22 @@ int CodeDisplay::getCode() {
 }
 
 void CodeDisplay::update() {
+  if (_startupActive) {
+    // Kør startup animation uanset _enabled status
+    updateStartup();
+    return;
+  }
+  
   if (!_enabled) {
-    // Vis blanke segmenter når slukket
+    // Vis blanke segmenter når slukket (efter startup)
     uint8_t blank[] = {0x00, 0x00, 0x00, 0x00};
     _display.setSegments(blank);
     return;
   }
   
-  if (_startupActive) {
-    updateStartup();
-  } else {
-    int code = getCode();
-    _display.showNumberDec(code, false);
-  }
+  // Normal kode visning når enabled
+  int code = getCode();
+  _display.showNumberDec(code, false);
 }
 
 void CodeDisplay::updateStartup() {
@@ -155,12 +158,13 @@ void CodeDisplay::turnOff() {
 }
 
 void CodeDisplay::turnOn() {
-  // Tænd kun brightness, men hold _enabled = false indtil adgangskode
+  // Tænd brightness og start startup sekvens med det samme
   _display.setBrightness(0x0f, true);
-  // _enabled forbliver false indtil enable() kaldes
+  startStartup();
+  // _enabled forbliver false - kun startup animation kører
 }
 
 void CodeDisplay::enable() {
   _enabled = true;
-  startStartup();
+  // Ingen startup her - bare aktiver kode visning
 }
