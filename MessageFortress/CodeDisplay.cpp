@@ -2,7 +2,7 @@
 
 CodeDisplay::CodeDisplay(int btn1, int btn2, int btn3, int btn4, int btn5, int btn6, int btn7, int btn8, int clk, int dio)
   : _btn1(btn1), _btn2(btn2), _btn3(btn3), _btn4(btn4), _btn5(btn5), _btn6(btn6), _btn7(btn7), _btn8(btn8), _clk(clk), _dio(dio), _display(clk, dio),
-    _startupActive(false), _startupCount(0), _lastStartupTime(0) {}
+    _startupActive(false), _startupCount(0), _lastStartupTime(0), _enabled(false) {}
 
 void CodeDisplay::begin() {
   pinMode(_btn1, INPUT_PULLUP);
@@ -13,7 +13,8 @@ void CodeDisplay::begin() {
   pinMode(_btn6, INPUT_PULLUP);
   pinMode(_btn7, INPUT_PULLUP);
   pinMode(_btn8, INPUT_PULLUP);
-  _display.setBrightness(0x0f);
+  _enabled = false;  // Start som slukket
+  _display.setBrightness(0x00);  // Slukket brightness
 }
 
 int CodeDisplay::readInputs() {
@@ -68,6 +69,10 @@ int CodeDisplay::getCode() {
 }
 
 void CodeDisplay::update() {
+  if (!_enabled) {
+    return;  // Gør intet hvis ikke enabled
+  }
+  
   if (_startupActive) {
     updateStartup();
   } else {
@@ -98,11 +103,13 @@ void CodeDisplay::startStartup() {
 }
 
 void CodeDisplay::turnOff() {
+  _enabled = false;
   _display.setBrightness(0x00, false);
   _display.clear();
 }
 
 void CodeDisplay::turnOn() {
+  _enabled = true;
   _display.setBrightness(0x0f, true);
   startStartup();
 }

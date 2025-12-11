@@ -12,6 +12,7 @@ class CodeDisplay {
     bool _startupActive;
     int _startupCount;
     unsigned long _lastStartupTime;
+    bool _enabled;
 
     int readInputs();
     int getCode();
